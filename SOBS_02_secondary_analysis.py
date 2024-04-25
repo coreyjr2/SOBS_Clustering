@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 print('Running secondary analysis.')
 print('')
 # Import the dataframe
-df = pd.read_csv('/Users/richiercj/Desktop/SOBS/data/SOBS_clustered.csv')
+df = pd.read_csv('/Users/cjrichier/Desktop/SOBS_Clustering/Data/SOBS_clustered.csv')
 
 # Selection of input data type 
 data_type = 'original' 
@@ -77,29 +77,29 @@ for var in variables:
     plt.title(f'Distribution of {var} in each cluster')
     plt.show()
 
-    # Lilliefors test and levee's test
+    # # Lilliefors test and levee's test
 
-    print(f'Assumptions tests for {var}:')
-    shaprio_result = shapiro(df[var])
-    print(f"Shaprio Test for {var}: Statistic = {shaprio_result[0]}, p-value = {shaprio_result[1]}")
-    if shaprio_result[1] <= .05:
-        normality = False
-        print(f'* WARNING! * Assumption of normality violated for {var}!')
-    if shaprio_result[1] > .05:
-        normality = True
-        print(f'{var} is normally distributed.')
+    # print(f'Assumptions tests for {var}:')
+    # shaprio_result = shapiro(df[var])
+    # print(f"Shaprio Test for {var}: Statistic = {shaprio_result[0]}, p-value = {shaprio_result[1]}")
+    # if shaprio_result[1] <= .05:
+    #     normality = False
+    #     # print(f'* WARNING! * Assumption of normality violated for {var}!')
+    # if shaprio_result[1] > .05:
+    #     normality = True
+    #     # print(f'{var} is normally distributed.')
     
-    # Levene's test
-    levene_result = stats.levene(df[df['cluster'] == 0][var],
-                                 df[df['cluster'] == 1][var],
-                                 df[df['cluster'] == 2][var])
-    print(f"Levene's Test: Statistic = {round(levene_result[0], 2)}, p-value = {levene_result[1]}")
-    if levene_result[1] <= .05:
-        equal_variances = False
-        print(f'* WARNING! * Variances for all three clusters are not homegenous for {var}!')
-    if levene_result[1] > .05:
-        equal_variances = True
-        print(f'Variances for {var} are homogenous.')
+    # # Levene's test
+    # levene_result = stats.levene(df[df['cluster'] == 0][var],
+    #                              df[df['cluster'] == 1][var],
+    #                              df[df['cluster'] == 2][var])
+    # print(f"Levene's Test: Statistic = {round(levene_result[0], 2)}, p-value = {levene_result[1]}")
+    # if levene_result[1] <= .05:
+    #     equal_variances = False
+    #     # print(f'* WARNING! * Variances for all three clusters are not homegenous for {var}!')
+    # if levene_result[1] > .05:
+    #     equal_variances = True
+    #     # print(f'Variances for {var} are homogenous.')
     
     print('')
     print('Running ANOVAS.')
@@ -121,8 +121,19 @@ corrected_p = mt.multipletests(p_values, method='bonferroni')
 print('********************************************************')
 print('Corrected P-values:', corrected_p[1])
 print('')
+
+
+# store only the variables that had significant anovas to conduct the tukey tests
+sig_p_indices = []
+for index, p in enumerate(corrected_p[1]):
+    print(p)
+    if p < .05:
+        sig_p_indices.append(index)
+sig_anova_variables = [variables[i] for i in sig_p_indices]
+
+# run the tukey tests 
 print('Running tukey tests...')
-for var in variables:
+for var in sig_anova_variables:
     print('************************')
     print(f'Tukey test for {var}')
     print('************************')
